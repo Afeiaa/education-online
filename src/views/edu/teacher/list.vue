@@ -1,6 +1,6 @@
 <template>
 
-    <div id="app-container">
+    <div class="app-container">
         讲师列表
 
         <!--查询表单-->
@@ -36,7 +36,7 @@
             </el-form-item>
 
             <el-button type="primary" icon="el-icon-search" @click="getList()">查询</el-button>
-            <el-button type="default" @click="getList()">清空</el-button>
+            <el-button type="default" @click="resetData()">清空</el-button>
         </el-form>
 
         <!-- 表格 -->
@@ -71,7 +71,7 @@
 
             <el-table-column label="操作" width="200" align="center">
                 <template slot-scope="scope">
-                <router-link :to="'/edu/teacher/edit/'+scope.row.id">
+                <router-link :to="'/teacher/edit/'+scope.row.id">
                     <el-button type="primary" size="mini" icon="el-icon-edit">修改</el-button>
                 </router-link>
                 <el-button type="danger" size="mini" icon="el-icon-delete" @click="removeDataById(scope.row.id)">删除</el-button>
@@ -88,7 +88,6 @@
         layout="total, prev, pager, next, jumper"
         @current-change="getList"
         />
-
 
     </div>
 
@@ -124,7 +123,46 @@ export default{
                     this.list = response.data.rows
                     this.total = response.data.total
                 })
-        }
+        },
+
+        resetData() {
+            // 清空条件
+            this.teacherQuery = {}
+
+            // 查询全部teacher
+            this.getList()
+        },
+
+        removeDataById(id) {
+            this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                teacher.removeById(id)
+                    .then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        })
+                        this.getList()       
+                    })             
+            }).catch((response) => { // 失败
+                if (response === 'cancel') {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    })
+                } else {
+                    this.$message({
+                        type: 'error',
+                        message: '删除失败'
+                    })
+                }
+            })
+
+        },
+
     }
 
 }

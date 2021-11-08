@@ -16,17 +16,69 @@
             <el-input v-model="courseInfo.title" placeholder=" 示例：机器学习项目课：从基础到搭建项目视频课程。专业名称注意大小写"/>
         </el-form-item>
 
-        <!-- 所属分类 TODO -->
+        <!-- 所属分类：级联下拉列表 -->
+        <!-- 一级分类 -->
+        <el-form-item label="课程类别">
+          <el-select
+            v-model="courseInfo.subjectParentId"
+            placeholder="一级分类"
+            @change="subjectLevelOneChanged">
+            <el-option
+              v-for="subject in oneSubjectList"
+              :key="subject.id"
+              :label="subject.title"
+              :value="subject.id"/>
+          </el-select>
+
+          <!-- 二级分类 -->
+          <el-select v-model="courseInfo.subjectId" placeholder="二级分类">
+            <el-option
+              v-for="subject in twoSubjectList"
+              :key="subject.id"
+              :label="subject.title"
+              :value="subject.id"/>
+          </el-select>
+
+        </el-form-item>
 
         <!-- 课程讲师 TODO -->
+        <!-- 课程讲师 -->
+        <el-form-item label="课程讲师">
+          <el-select
+            v-model="courseInfo.teacherId"
+            placeholder="请选择">
+            <el-option
+              v-for="teacher in teacherList"
+              :key="teacher.id"
+              :label="teacher.name"
+              :value="teacher.id"/>
+          </el-select>
+        </el-form-item>
+
 
         <el-form-item label="总课时">
             <el-input-number :min="0" v-model="courseInfo.lessonNum" controls-position="right" placeholder="请填写课程的总课时数"/>
         </el-form-item>
 
         <!-- 课程简介 TODO -->
+        <el-form-item label="课程简介">
+            <el-input v-model="courseInfo.description"/>
+            <!-- <tinymce :height="300" v-model="courseInfo.description"/> -->
+        </el-form-item>
 
-        <!-- 课程封面 TODO -->
+        <!-- 课程封面-->
+        <el-form-item label="课程封面">
+
+          <el-upload
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+            :action="BASE_API+'/eduoss/fileoss/avatar'"
+            class="avatar-uploader">
+            <img :src="courseInfo.cover">
+          </el-upload>
+
+        </el-form-item>
 
         <el-form-item label="课程价格">
             <el-input-number :min="0" v-model="courseInfo.price" controls-position="right" placeholder="免费课程请设置为0元"/> 元
@@ -44,6 +96,9 @@
 
 <script>
 import course from '@/api/edu/course'
+import teacherApi from '@/api/edu/teacher'
+import subjectApi from '@/api/edu/subject'
+
 
 const defaultForm = {
   title: '',
@@ -52,23 +107,56 @@ const defaultForm = {
   lessonNum: 0,
   description: '',
   cover: '',
-  price: 0
+  price: 0,
+  cover: "/static/3.jpg",
 }
 
 export default {
   data() {
     return {
       courseInfo: defaultForm,
-      saveBtnDisabled: false // 保存按钮是否禁用
+      saveBtnDisabled: false, // 保存按钮是否禁用
+      teacherList: [],
+      oneSubjectList: [],
+      twoSubjectList: [],
+      BASE_API: process.env.BASE_API // 接口API地址
     }
   },
 
 
   created() {
     console.log('info created')
+    this.init()
   },
 
   methods: {
+    init() {
+      this.initTeacherList()
+      this.initOneSubjectList()
+    },
+    
+    initTeacherList() {
+      teacherApi.getAllTeacher().then((res) => {
+        this.teacherList = res.data.items
+      })
+    },
+
+    initOneSubjectList() {
+      subjectApi.getNestedTreeList().then(res => {
+        this.oneSubjectList = res.data.list
+      })
+    },
+
+    // 根据一级分类的选择，初始化二级分类
+    subjectLevelOneChanged(value) {
+      console.log(value)
+      for (let i = 0; i < this.oneSubjectList.length; i++) {
+          if (this.oneSubjectList[i].id === value) {
+              this.twoSubjectList = this.oneSubjectList[i].children 
+              this.courseInfo.subjectId = ''
+          }
+      }
+    },
 
     next() {
       console.log('next')
@@ -93,6 +181,24 @@ export default {
       })
     },
 
+    handleAvatarSuccess(res, file) {
+      console.log(res)// 上传响应
+      console.log(URL.createObjectURL(file.raw))// base64编码
+      this.courseInfo.cover = res.data.url
+    },
+
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg'
+      const isLt2M = file.size / 1024 / 1024 < 2
+
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 JPG 格式!')
+      }
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!')
+      }
+      return isJPG && isLt2M
+    }
 
   }
 }

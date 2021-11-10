@@ -101,11 +101,10 @@ import subjectApi from '@/api/edu/subject'
 import Tinymce from '@/components/Tinymce'
 
 
-
-
 const defaultForm = {
   title: '',
   subjectId: '',
+  subjectParentId: '',
   teacherId: '',
   lessonNum: 0,
   description: '',
@@ -124,20 +123,45 @@ export default {
       teacherList: [],
       oneSubjectList: [],
       twoSubjectList: [],
+      courseId: '',
       BASE_API: process.env.BASE_API // 接口API地址
     }
   },
 
-
   created() {
-    console.log('info created')
-    this.init()
+    if (this.$route.params && this.$route.params.id) {
+      this.courseId = this.$route.params.id
+      this.getInfo()
+      this.initTeacherList()
+      console.log(this.oneSubjectList)
+      console.log(this.twoSubjectList)
+    } else {
+      this.init()
+    }
   },
 
   methods: {
     init() {
       this.initTeacherList()
       this.initOneSubjectList()
+    },
+
+    getInfo() {
+      course.getCourseInfoById(this.courseId).then(res => {
+        this.courseInfo = res.data.curseInfo
+        subjectApi.getNestedTreeList().then(res => {
+          this.oneSubjectList = res.data.list
+          console.log(res.data.list)
+          for (let i = 0; i < this.oneSubjectList.length; i++) {
+              var oneSubject = this.oneSubjectList[i]
+              if (oneSubject.id === this.courseInfo.subjectParentId) {
+                  this.twoSubjectList = oneSubject.children 
+              }
+          }
+
+        })
+
+      })
     },
     
     initTeacherList() {
@@ -203,7 +227,7 @@ export default {
         this.$message.error('上传头像图片大小不能超过 2MB!')
       }
       return isJPG && isLt2M
-    }
+    },
 
   }
 }

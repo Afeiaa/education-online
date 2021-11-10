@@ -80,18 +80,17 @@ export default {
     getChapterVideo() {
       chapterApi.getAallChapterVideo(this.courseId).then(response => {
         this.chapterVideoList = response.data.allChapterVideo
-        console.log("**************************************"+this.chapterVideoList)
       })
     },
 
     previous() {
       console.log('previous')
-      this.$router.push({ path: '/course/info/1' })
+      this.$router.push({ path: `/course/info/${this.courseId}` })
     },
 
     next() {
       console.log('next')
-      this.$router.push({ path: '/course/publish/1' })
+      this.$router.push({ path: `/course/publish/${this.courseId}` })
     }
   }
 }

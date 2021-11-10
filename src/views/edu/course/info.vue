@@ -98,6 +98,9 @@
 import course from '@/api/edu/course'
 import teacherApi from '@/api/edu/teacher'
 import subjectApi from '@/api/edu/subject'
+import Tinymce from '@/components/Tinymce'
+
+
 
 
 const defaultForm = {
@@ -112,6 +115,8 @@ const defaultForm = {
 }
 
 export default {
+  components: { Tinymce },
+
   data() {
     return {
       courseInfo: defaultForm,
@@ -203,3 +208,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.tinymce-container {
+  line-height: 29px;
+}
+</style>

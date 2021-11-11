@@ -10,8 +10,8 @@
       <el-step title="最终发布"/>
     </el-steps>
 
-    <!-- <el-button type="text">添加章节</el-button> -->
-   <!-- 章节 -->
+    <el-button type="text" @click="openChapterDialog()">添加章节</el-button>
+    <!-- 章节 -->
     <ul class="chanpterList">
         <li
             v-for="chapter in chapterVideoList"
@@ -48,6 +48,22 @@
         <el-button :disabled="saveBtnDisabled" type="primary" @click="next">下一步</el-button>
     </div>
 
+    <!-- 添加和修改章节表单 -->
+    <el-dialog :visible.sync="dialogChapterFormVisible" title="添加章节">
+        <el-form :model="chapter" label-width="120px">
+            <el-form-item label="章节标题">
+                <el-input v-model="chapter.title"/>
+            </el-form-item>
+            <el-form-item label="章节排序">
+                <el-input-number v-model="chapter.sort" :min="0" controls-position="right"/>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogChapterFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="saveOrUpdate">确 定</el-button>
+        </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -59,7 +75,13 @@ export default {
     return {
       saveBtnDisabled: false, // 保存按钮是否禁用
       courseId: '', // 所属课程
-      chapterVideoList: [] // 章节嵌套课时列表
+      chapterVideoList: [], // 章节嵌套课时列表
+      dialogChapterFormVisible: false, //是否显示章节表单
+      chapter: {// 章节对象
+        title: '',
+        courseId: '',
+        sort: 0
+      }
     }
   },
 
@@ -77,9 +99,63 @@ export default {
       }
     },
 
+    // 获取章节和小结信息
     getChapterVideo() {
       chapterApi.getAallChapterVideo(this.courseId).then(response => {
         this.chapterVideoList = response.data.allChapterVideo
+      })
+    },
+
+    // 添加
+    addChapter() {
+      this.chapter.courseId = this.courseId
+      chapterApi.save(this.chapter).then(() => {
+        this.$message({
+          type: 'success',
+          message: '添加章节成功!'
+        })
+        this.dialogChapterFormVisible = false
+        this.getChapterVideo()
+      })
+    },
+    // 修改
+    updateChapter() {
+      this.chapter.courseId = this.courseId
+      chapterApi.updateById(this.chapter).then(() => {
+        this.$message({
+          type: 'success',
+          message: '修改章节成功!'
+        })
+        this.dialogChapterFormVisible = false
+        this.getChapterVideo()
+      })
+    },
+    // 添加和修改章节
+    saveOrUpdate() {
+      if (!this.chapter.id) {
+        // save
+        this.addChapter()
+      }
+      // update
+      this.updateChapter()
+     
+    },
+
+    // 添加章节弹框
+    openChapterDialog() {
+        this.dialogChapterFormVisible = true
+        this.chapter = { // 章节对象清空
+          title: '',
+          courseId: '',
+          sort: 0
+        }
+    },
+
+    // 修改章节
+    openEditChatper(chapterId) {
+      this.dialogChapterFormVisible = true
+      chapterApi.getById(chapterId).then(res => {
+          this.chapter = res.data.chapter
       })
     },
 

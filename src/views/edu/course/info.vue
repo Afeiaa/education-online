@@ -102,6 +102,7 @@ import Tinymce from '@/components/Tinymce'
 
 
 const defaultForm = {
+  id: '',
   title: '',
   subjectId: '',
   subjectParentId: '',
@@ -189,26 +190,61 @@ export default {
 
     next() {
       console.log('next')
-      this.saveData()
+      this.saveOrUpdate()
     },
 
      // 保存
-    saveData() {
-      course.saveCourseInfo(this.courseInfo).then(response => {
-        this.$message({
-          type: 'success',
-          message: '保存成功!'
+    // saveData() {
+    //   course.saveCourseInfo(this.courseInfo).then(response => {
+    //     this.$message({
+    //       type: 'success',
+    //       message: '保存成功!'
+    //     })
+    //     return response// 将响应结果传递给then
+    //   }).then(response => {
+    //     this.$router.push({ path: '/course/chapter/' + response.data.courseId })
+    //   }).catch((response) => {
+    //     this.$message({
+    //       type: 'error',
+    //       message: response.message
+    //     })
+    //   })
+    // },
+
+    addCourse() {
+        course.saveCourseInfo(this.courseInfo)
+          .then(response => {
+            //提示
+            this.$message({
+              type: 'success',
+              message: '添加课程信息成功!'
+            });
+            //跳转到第二步
+            this.$router.push({path:'/course/chapter/'+response.data.courseId})
         })
-        return response// 将响应结果传递给then
-      }).then(response => {
-        this.$router.push({ path: '/course/chapter/' + response.data.courseId })
-      }).catch((response) => {
-        this.$message({
-          type: 'error',
-          message: response.message
-        })
-      })
     },
+  //修改课程
+  updateCourse() {
+      course.updateCourseInfoById(this.courseInfo)
+        .then(() => {
+              //提示
+            this.$message({
+              type: 'success',
+              message: '修改课程信息成功!'
+            });
+            //跳转到第二步
+            this.$router.push({path:'/course/chapter/'+this.courseId})
+        })
+  },
+  saveOrUpdate() {
+      //判断添加还是修改
+      if(!this.courseInfo.id) {
+          //添加
+          this.addCourse()
+      } else {
+          this.updateCourse()
+      }
+  },
 
     handleAvatarSuccess(res, file) {
       console.log(res)// 上传响应

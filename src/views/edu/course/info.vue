@@ -102,7 +102,6 @@ import Tinymce from '@/components/Tinymce'
 
 
 const defaultForm = {
-  id: '',
   title: '',
   subjectId: '',
   subjectParentId: '',
@@ -138,6 +137,7 @@ export default {
       console.log(this.twoSubjectList)
     } else {
       this.init()
+      this.courseInfo = defaultForm
     }
   },
 
@@ -192,24 +192,6 @@ export default {
       console.log('next')
       this.saveOrUpdate()
     },
-
-     // 保存
-    // saveData() {
-    //   course.saveCourseInfo(this.courseInfo).then(response => {
-    //     this.$message({
-    //       type: 'success',
-    //       message: '保存成功!'
-    //     })
-    //     return response// 将响应结果传递给then
-    //   }).then(response => {
-    //     this.$router.push({ path: '/course/chapter/' + response.data.courseId })
-    //   }).catch((response) => {
-    //     this.$message({
-    //       type: 'error',
-    //       message: response.message
-    //     })
-    //   })
-    // },
 
     addCourse() {
         course.saveCourseInfo(this.courseInfo)
